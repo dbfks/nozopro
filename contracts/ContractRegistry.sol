@@ -10,7 +10,7 @@ contract ContractRegistry {
         bool approved;
     }
 
-      mapping(uint256 => ContractData) public contracts;
+    mapping(uint256 => ContractData) public contracts;
     uint256 public nextId;
 
     event ContractRegistered(uint256 indexed id, bytes32 fileHash, uint256 expiry);
@@ -20,7 +20,7 @@ contract ContractRegistry {
     event ContractApproved(uint256 indexed id);
 
     function registerContract(bytes32 fileHash, uint256 expiry) external {
-        uint256 id = nextId++;
+        uint256 id = nextId;
         contracts[id] = ContractData({
             fileHash: fileHash,
             expiry: expiry,
@@ -28,6 +28,7 @@ contract ContractRegistry {
             signedByWorker: false,
             approved: false
         });
+        nextId++;
         emit ContractRegistered(id, fileHash, expiry);
     }
 

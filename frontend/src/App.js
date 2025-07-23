@@ -1,28 +1,27 @@
-import logo from './logo.svg';
 import './App.css';
 import axios from 'axios';
+import { useState } from 'react';
+import ContractRegistration from './components/ContractRegistration';
+import ContractActions from './components/ContractActions';
+import TimeSheet from './components/TimeSheet';
+
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 
-function App() {
+export default function App() {
+  const [agreementId, setAgreementId] = useState(null);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     <div style={{ padding: 32 }}>
+      <h1>근로 계약 서비스</h1>
+      <ContractRegistration onRegistered={setAgreementId}/>
+      {agreementId !== null && (
+        <>
+          <ContractActions agreementId={agreementId}/>
+          <TimeSheet       agreementId={agreementId}/>
+        </>
+      )}
     </div>
   );
 }
 
-export default App;
