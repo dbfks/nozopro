@@ -42,11 +42,8 @@ mapping(uint256 => Entry[]) public entries; // agreementId → 출퇴근 기록 
 
 | 함수명                | 파라미터                          | 반환값         | 설명                                                                                     |
 |--------------------|---------------------------------|-------------|----------------------------------------------------------------------------------------|
-| `clockIn` | `uint256 agreementId` | — | entries[agreementId]에 {inTime=block.timestamp, outTime=0} 추가<br>
-ClockIn(agreementId, time) 이벤트 발생 |
-| `clockOut`   | `uint256 agreementId`                    | —           | 마지막 Entry.outTime이 0일 때만 동작<br>
-outTime = block.timestamp 설정<br>
-ClockOut(agreementId, time) 이벤트 발생                                         |
+| `clockIn` | `uint256 agreementId` | — | entries[agreementId]에 {inTime=block.timestamp, outTime=0} 추가<br>ClockIn(agreementId, time) 이벤트 발생 |
+| `clockOut`   | `uint256 agreementId`                    | —           | 마지막Entry.outTime이 0일 때만 동작<br>outTime = block.timestamp 설정<br>ClockOut(agreementId, time) 이벤트 발생                                         |
 
 
 ### 이벤트 (Events)
