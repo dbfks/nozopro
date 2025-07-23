@@ -34,7 +34,8 @@
 struct Entry {
   uint256 inTime;
   uint256 outTime;
-}'''
+}
+```
 mapping(uint256 => Entry[]) public entries; // agreementId → 출퇴근 기록 배열
 
 ### 함수 (Functions)
