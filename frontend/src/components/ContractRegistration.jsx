@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const BASE = `http://${window.location.hostname}:3001`;
+
 export default function ContractRegistration({ onRegistered }) {
   const [file, setFile] = useState(null);
   const [expiry, setExpiry] = useState('');
@@ -11,16 +13,21 @@ export default function ContractRegistration({ onRegistered }) {
     setMsg('1) IPFS에 업로드 중…');
     const form = new FormData();
     form.append('contract', file);
-    const { data: { cid } } = await axios.post('/api/uploadContract', form, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const { data: { cid } } = await axios.post(
+        `${BASE}/api/uploadContract`,
+        form
+    );
 
     setMsg(`2) 온체인 등록 중… (${cid})`);
     const expiryTs = Math.floor(new Date(expiry).getTime()/1000);
-    const { data: { txHash, id } } = await axios.post('/api/register', { cid, expiryTs });
+    const { data: { txHash, id } } = await axios.post(
+        `${BASE}/api/register`, 
+        { cid, expiryTs });
     setMsg(`등록 완료! id: ${id}, tx: ${txHash}`);
     onRegistered(id);  // 부모 컴포넌트에 ID 알림
   };
+
+  
 
   return (
     <div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const BASE = `http://${window.location.hostname}:3001`;
+
 function formatKST(ts) {
   return new Date(ts * 1000).toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
@@ -26,7 +28,7 @@ export default function TimeSheet({ agreementId }) {
   const fetchEntries = async () => {
     setMsg('기록 조회 중…');
     try {
-      const { data } = await axios.get(`/api/entries/${agreementId}`);
+      const { data } = await axios.get(`${BASE}/api/entries/${agreementId}`);
       setEntries(data);
       setMsg('기록 조회 완료');
     } catch (e) {
@@ -37,8 +39,8 @@ export default function TimeSheet({ agreementId }) {
   return (
     <div>
       <h2>TimeSheet</h2>
-      <button onClick={()=>doClock('/api/clock-in','출근')}>출근</button>
-      <button onClick={()=>doClock('/api/clock-out','퇴근')}>퇴근</button>
+      <button onClick={()=>doClock(`${BASE}/api/clock-in`,'출근')}>출근</button>
+      <button onClick={()=>doClock(`${BASE}/api/clock-out`,'퇴근')}>퇴근</button>
       <button onClick={fetchEntries}>기록 조회</button>
       <p>{msg}</p>
 
