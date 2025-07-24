@@ -1,12 +1,9 @@
+// /src/App.js
 import './App.css';
-import axios from 'axios';
 import { useState } from 'react';
 import ContractRegistration from './components/ContractRegistration';
 import ContractActions from './components/ContractActions';
 import TimeSheet from './components/TimeSheet';
-
-axios.defaults.baseURL = process.env.REACT_APP_API_URL;
-
 
 export default function App() {
   const [agreementId, setAgreementId] = useState(null);
