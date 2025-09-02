@@ -13,10 +13,14 @@
   "license": "ISC",
   "dependencies": {
     "@pinata/sdk": "^2.1.0",
+    "axios": "^1.11.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "form-data": "^4.0.4",
+    "mongoose": "^8.17.1",
     "multer": "^2.0.2",
+    "pdfkit": "^0.17.2",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {

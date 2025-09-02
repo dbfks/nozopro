@@ -1,38 +1,115 @@
-.App {
-  text-align: center;
+/* App.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.section {
+  margin-bottom: 2.5rem;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.section h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #007bff;
+  padding-left: 0.5rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.flex {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 1rem;
 }
 
-.App-link {
-  color: #61dafb;
+.input, 
+input[type="file"],
+input[type="datetime-local"] {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s;
+  background-color: #007bff;
+  color: #fff;
+}
+
+.button.secondary {
+  background-color: #6c757d;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.record-titles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .register-fields {
+    display: flex;
+    flex-direction: column !important;
   }
-  to {
-    transform: rotate(360deg);
+}
+
+/* 기본: 넓은 화면에선 4칸 그리드 */
+.register-grid {
+  display: grid;
+  grid-template-columns: 
+    1fr                 /* 파일 입력 */
+    minmax(120px, 1fr)  /* 날짜 */
+    minmax(100px, 1fr)  /* 시간 */
+    auto;               /* 버튼 */;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* 화면 폭 480px 이하에선 무조건 한 칸 */
+@media (max-width: 480px) {
+  .register-grid {
+    grid-template-columns: 1fr !important;
   }
+}
+
+.result-message {
+  overflow-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+  max-width: 100%;
 }

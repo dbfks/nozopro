@@ -51,6 +51,14 @@ const timesheet = new ethers.Contract(process.env.TIMESHEET_ADDRESS, timesheetAb
  *        필드명: contract
  */
 
+router.use((req, res, next) => {
+  // ✅ GET이면 통과, 바디 필드 없으면 통과
+  if (req.method === 'GET') return next();
+  // 서명/해시 처리 전에 값 존재 확인
+  // if (!req.body?.sig) return res.status(400).json({ error: 'missing sig' });
+  next();
+});
+
 router.post(
   '/uploadContract',
   upload.single('contract'),
@@ -200,6 +208,35 @@ router.get('/entries/:id', async (req, res) => {
     res
       .status(500)
       .json({ error: err.reason || err.message || '기록 조회 중 오류가 발생했습니다.' });
+  }
+});
+
+  router.get('/contracts', async (req, res) => {
+  try {
+    // 1) 총 계약 개수 가져오기
+    const nextIdBig = await registry.nextId();      // BigInt
+    const count     = Number(nextIdBig);
+
+    // 2) 개별 계약들 읽어서 배열에 담기
+    const all = [];
+    for (let i = 0; i < count; i++) {
+      const c = await registry.contracts(i);
+      all.push({
+        id:             i,
+        cid:            ethers.toUtf8String(c.cid),
+        expiryTs:       Number(c.expiry),
+        employerSigned: c.employerSigned,
+        workerSigned:   c.workerSigned,
+        approved:       c.approved,
+      });
+    }
+
+    // 3) 승인된(approved) 계약만 필터링해서 반환
+    const approved = all.filter(c => c.approved);
+    return res.json(approved);
+  } catch (err) {
+    console.error('GET /contracts error', err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
