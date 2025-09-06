@@ -1,75 +1,100 @@
 // backend/models/Contract.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import { createHash, randomBytes, randomUUID } from 'crypto';
 
-function genContractId() {
-  // 사람이 읽기 쉬운, 중복 적은 ID
-  return (
-    "c-" +
-    Date.now().toString(36) +
-    "-" +
-    Math.random().toString(36).slice(2, 6)
-  );
+
+// 보조 함수: SHA-256(hex)
+export function sha256Hex(input) {
+return createHash('sha256').update(input).digest('hex');
 }
 
-const ContractSchema = new mongoose.Schema(
+// 초대(Invite) 하위 스키마
+const InviteSchema = new mongoose.Schema(
   {
-    contractId: {
-      type: String,
-      unique: true,
-      required: false,          // ⬅️ 필수 해제
-      default: genContractId,   // ⬅️ 자동 생성
-      index: true,
-    },
-    title: { type: String, required: true },
-
-    employer: {
-      address: { type: String, required: true },
-      name: { type: String },
-    },
-    employee: {
-      address: { type: String, required: true },
-      name: { type: String },
-    },
-
-    docJson: { type: Object, default: {} },
-
-    // 초안 단계에서는 아직 미확정이므로 비필수
-    docHash: { type: String, required: false, default: "" },
-
-    // 최종 승인 시 채우는 필드들
-    finalDocHash: { type: String, default: "" },
-    ipfsCid: { type: String, default: "" },
-    onChain: {
-      lastTxHash: { type: String },
-      id: { type: Number },
-    },
-
-    status: {
-      type: String,
-      enum: ["DRAFT", "SENT", "SIGNED_EMP", "APPROVED", "REJECTED"],
-      default: "DRAFT",
-      index: true,
-    },
-
-    timeline: [
-      {
-        action: String,
-        by: String,
-        txHash: String,
-        note: String,
-        at: { type: Date, default: Date.now },
-      },
-    ],
-
-    attachments: [{ name: String, url: String }],
+  id: { type: String, default: () => randomUUID() },
+  invitee: {
+    address: { type: String, required: true },
+    name: { type: String, default: '' },
   },
-  { timestamps: true }
+  role: { type: String, enum: ['EMPLOYER', 'EMPLOYEE'], default: 'EMPLOYEE' },
+  expiresAt: { type: Date },
+  nonce: { type: String, default: () => randomBytes(16).toString('hex') },
+  inviteHash: { type: String },
+  acceptedAt: { type: Date },
+  status: { type: String, enum: ['PENDING', 'ACCEPTED', 'EXPIRED'], default: 'PENDING' },
+  
+  otpHash: { type: String, default: "" },
+  otpExpiresAt: { type: Date },
+  otpVerified: { type: Boolean, default: false },
+  },
+  { _id: false },
+  );
+
+  // 서명(Signature) 하위 스키마(다음 단계에서 사용)
+const SignatureSchema = new mongoose.Schema(
+  {
+    by: { type: String, required: true }, // signer address
+    role: { type: String, enum: ["EMPLOYER", "EMPLOYEE"], required: true },
+    sig: { type: String, default: "" },   // ✅ required 제거, 기본값 ""
+    signType: { type: String, enum: ["TEXT", "DRAWN", "WALLET"], default: "DRAWN" },
+    signBlob: { type: String, default: "" },
+    at: { type: Date, default: () => new Date() },
+  },
+  { _id: false }
 );
 
-// 검색 인덱스들(있으면 유지)
-ContractSchema.index({ "employer.address": 1, status: 1, createdAt: -1 });
-ContractSchema.index({ "employee.address": 1, status: 1, createdAt: -1 });
-ContractSchema.index({ title: "text" });
+  const ContractSchema = new mongoose.Schema(
+    {
+    title: { type: String, required: true },
+    employer: {
+    address: { type: String, required: true },
+    name: { type: String, default: '' },
+    },
+    employee: {
+    address: { type: String, required: true },
+    name: { type: String, default: '' },
+    },
+    docJson: { type: mongoose.Schema.Types.Mixed, default: {} },
+    
+    
+    // DRAFT 단계에선 필수 아님 — 기본값으로 자동 채움
+    contractId: { type: String, default: () => randomUUID() },
+    docHash: { type: String, default: '' },
+    
+    
+    // 상태 머신
+    status: {
+    type: String,
+    enum: ['DRAFT', 'INVITED', 'ACCEPTED', 'SIGNED_EMP', 'SIGNED_BOTH', 'APPROVED'],
+    default: 'DRAFT',
+    },
+    
+    
+    invites: { type: [InviteSchema], default: [] },
+    signatures: { type: [SignatureSchema], default: [] },
+    
+    
+    final: {
+      pdfUrl: { type: String, default: '' },
+      sha256: { type: String, default: '' }, // 최종 PDF 해시
+      ipfsCid: { type: String, default: '' },
+      txHash: { type: String, default: '' },
+      },
 
-const Contract = mongoose.model("Contract", ContractSchema);
-export default Contract;
+      onChain: {
+        id: { type: Number },
+        lastTxHash: { type: String, default: '' },
+      },
+    },
+    { timestamps: true }
+    );
+
+    // 초대용 해시 계산기: 계약ID|주소|역할|nonce|만료시각(ISO)
+export function computeInviteHash({ contractId, invitee, role, nonce, expiresAt }) {
+  const iso = expiresAt ? new Date(expiresAt).toISOString() : '';
+  const msg = `${contractId}|${invitee.address.toLowerCase()}|${role}|${nonce}|${iso}`;
+  return sha256Hex(msg);
+  }
+  
+  
+  export default mongoose.model('Contract', ContractSchema);

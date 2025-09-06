@@ -36,7 +36,7 @@ export default function ContractSearch() {
       <h2>계약 조회 &amp; 서명/승인</h2>
       <div style={{ display:'flex', gap:8, marginBottom:12 }}>
         <input
-    type="number"
+    type="text"
     placeholder="계약 ID"
     style={{ flex: '1 1 100px', minWidth: '100px' }}
     value={id}

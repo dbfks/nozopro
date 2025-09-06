@@ -8,12 +8,18 @@ import { ethers } from 'ethers';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { resolve, dirname } from 'path';
+import Contract from "../models/Contract.js";
+import mongoose from "mongoose";
+
+import { createInvite, acceptInvite } from '../controllers/contractController.js';
+import { requestOtp, verifyOtp } from "../controllers/otpController.js";
+import { signContract } from "../controllers/signController.js";
+
 
 const router = express.Router();
 router.use(express.json());
 
 const upload = multer();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
@@ -43,7 +49,7 @@ const wallet   = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 const registry  = new ethers.Contract(process.env.CONTRACT_ADDRESS, registryAbi, wallet);
 const timesheet = new ethers.Contract(process.env.TIMESHEET_ADDRESS, timesheetAbi, wallet);
 
-// 3) REST API 라우트
+// ================ REST API 라우트 =====================
 
 /**
  * @route POST /api/uploadContract
@@ -51,53 +57,31 @@ const timesheet = new ethers.Contract(process.env.TIMESHEET_ADDRESS, timesheetAb
  *        필드명: contract
  */
 
-router.use((req, res, next) => {
-  // ✅ GET이면 통과, 바디 필드 없으면 통과
-  if (req.method === 'GET') return next();
-  // 서명/해시 처리 전에 값 존재 확인
-  // if (!req.body?.sig) return res.status(400).json({ error: 'missing sig' });
-  next();
+// 파일 업로드 → IPFS
+router.post('/uploadContract', upload.single('contract'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'contract 필드에 파일을 첨부해주세요.' });
+    }
+    const readStream = streamifier.createReadStream(req.file.buffer);
+    const result = await pinata.pinFileToIPFS(readStream, {
+      pinataMetadata: { name: req.file.originalname }
+    });
+    return res.json({ cid: result.IpfsHash });
+  } catch (err) {
+    console.error('uploadContract error', err);
+    return res.status(500).json({ error: err.message || '파일 업로드 중 오류' });
+  }
 });
 
-router.post(
-  '/uploadContract',
-  upload.single('contract'),
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'contract 필드에 파일을 첨부해주세요.' });
-      }
-
-      // 버퍼 → 스트림
-      const readStream = streamifier.createReadStream(req.file.buffer);
-
-      // Pinata에 핀
-      const result = await pinata.pinFileToIPFS(readStream, {
-        pinataMetadata: { name: req.file.originalname }
-      });
-
-      // CID 응답
-      return res.json({ cid: result.IpfsHash });
-    } catch (err) {
-      console.error('uploadContract error', err);
-      return res
-        .status(500)
-        .json({ error: err.message || '파일 업로드 중 오류가 발생했습니다.' });
-    }
-  }
-);
-
-// 3.1 계약 등록
+// 온체인 계약 등록 (자동화 안 할 경우 직접 호출용)
 router.post('/register', async (req, res) => {
   try {
     const { cid, expiryTs } = req.body;
     const tx = await registry.registerContract(ethers.id(cid), expiryTs);
     const receipt = await tx.wait();
-    // 1) on-chain 상태 읽기: nextId는 이미 ++ 됐으니, 현재 값에서 1 빼기
-     // v6 방식: BigInt 뺄셈 사용
-    const nextIdBigInt = await registry.nextId();         // BigInt
-    const id = Number(nextIdBigInt - 1n);                  // 바로 직전 할당된 ID       // 실제 방금 생성된 ID
-    
+    const nextIdBigInt = await registry.nextId();
+    const id = Number(nextIdBigInt - 1n);
     res.json({ txHash: tx.hash, id });
   } catch (err) {
     console.error('register error', err);
@@ -105,83 +89,14 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// 3.2 서명 (고용주 / 근로자)
-router.post('/sign/employer', async (req, res) => {
-  try { 
-    const { id } = req.body;
-    const tx = await registry.signByEmployer(id);
-    await tx.wait();
-    res.json({ txHash: tx.hash });
-  } catch (err) {
-    console.error('employer sign error', err);
-    res
-    .status(500)
-    .json({ error: err.reason || err.message || 'Unknown error' });
-  }
-});
-
-router.post('/sign/worker', async (req, res) => {
-  try { 
-    const { id } = req.body;
-    const tx = await registry.signByWorker(id);
-    await tx.wait();
-    res.json({ txHash: tx.hash });
-  } catch (err) {
-    console.error('worker sign error', err);
-    res
-    .status(500)
-    .json({ error: err.reason || err.message || 'Unknown error' });
-  }
-});
-
-//3.3. 최종 승인(approveContract) 엔드포인트 추가
-router.post('/approve', async (req, res) => {
-  try {
-    const { id } = req.body;
-    if (typeof id !== 'number' && typeof id !== 'string') {
-      return res.status(400).json({ error: 'id(계약번호)를 body에 담아주세요.' });
-    }
-
-    const tx = await registry.approveContract(Number(id));
-    await tx.wait();
-
-    return res.json({ txHash: tx.hash });
-  } catch (err) {
-    console.error('approve error', err);
-    return res
-      .status(500)
-      .json({ error: err.reason || err.message || '승인 처리 중 오류가 발생했습니다.' });
-  }
-});
-
-
-// 3.4 계약만료 트리거
-router.post('/expire', async (req, res) => {
-  try {
-    const { id } = req.body;
-    if (id === undefined) {
-      return res.status(400).json({ error: 'id(계약번호)를 body에 담아주세요.' });
-    }
-    const tx = await registry.expireContract(Number(id));
-    await tx.wait();
-    return res.json({ txHash: tx.hash });
-  } catch (err) {
-    console.error('expire error', err);
-    // block.timestamp < expiry 시 발생하는 Not yet expired 메시지 등
-    return res
-      .status(500)
-      .json({ error: err.reason || err.message || '만료 처리 중 오류가 발생했습니다.' });
-  }
-});
-
-
-// 3.5 출퇴근
+// 출퇴근 기록
 router.post('/clock-in', async (req, res) => {
   const { id } = req.body;
   const tx = await timesheet.clockIn(id);
   await tx.wait();
   res.json({ txHash: tx.hash });
 });
+
 router.post('/clock-out', async (req, res) => {
   const { id } = req.body;
   const tx = await timesheet.clockOut(id);
@@ -189,7 +104,7 @@ router.post('/clock-out', async (req, res) => {
   res.json({ txHash: tx.hash });
 });
 
-// 3.6 기록 조회 (예: GET /api/entries/0)
+// 출퇴근 로그 조회
 router.get('/entries/:id', async (req, res) => {
   try {
     const agreementId = Number(req.params.id);
@@ -205,39 +120,81 @@ router.get('/entries/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('entries error', err);
-    res
-      .status(500)
-      .json({ error: err.reason || err.message || '기록 조회 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: err.reason || err.message || '기록 조회 오류' });
   }
 });
 
-  router.get('/contracts', async (req, res) => {
+// ----------------------
+// 계약 목록 조회 (DB)
+// ----------------------
+router.get("/contracts", async (req, res) => {
   try {
-    // 1) 총 계약 개수 가져오기
-    const nextIdBig = await registry.nextId();      // BigInt
-    const count     = Number(nextIdBig);
+    const {
+      q, employer, employee, status, from, to,
+      page = 1, size = 10,
+    } = req.query;
 
-    // 2) 개별 계약들 읽어서 배열에 담기
-    const all = [];
-    for (let i = 0; i < count; i++) {
-      const c = await registry.contracts(i);
-      all.push({
-        id:             i,
-        cid:            ethers.toUtf8String(c.cid),
-        expiryTs:       Number(c.expiry),
-        employerSigned: c.employerSigned,
-        workerSigned:   c.workerSigned,
-        approved:       c.approved,
-      });
+    const filter = {};
+    if (employer) filter["employer.address"] = employer;
+    if (employee) filter["employee.address"] = employee;
+    if (status) filter.status = status;
+    if (from || to) {
+      filter.createdAt = {
+        ...(from ? { $gte: new Date(from) } : {}),
+        ...(to ? { $lte: new Date(to) } : {}),
+      };
     }
 
-    // 3) 승인된(approved) 계약만 필터링해서 반환
-    const approved = all.filter(c => c.approved);
-    return res.json(approved);
-  } catch (err) {
-    console.error('GET /contracts error', err);
-    return res.status(500).json({ error: err.message });
+    let query = Contract.find(filter).sort({ createdAt: -1 });
+    if (q) query = query.find({ $text: { $search: q } });
+
+    const skip = (Number(page) - 1) * Number(size);
+    const [items, total] = await Promise.all([
+      query.skip(skip).limit(Number(size)),
+      Contract.countDocuments(q ? { ...filter, $text: { $search: q } } : filter),
+    ]);
+
+    res.json({ items, total, page: Number(page), size: Number(size) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
+
+// ----------------------
+// 계약 단건 조회 (DB)
+// ----------------------
+router.get("/contracts/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const or = [{ contractId: id }];
+    if (mongoose.Types.ObjectId.isValid(id)) or.push({ _id: id });
+
+    const doc = await Contract.findOne({ $or: or });
+    if (!doc) return res.status(404).json({ error: "Not found" });
+    res.json(doc);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ----------------------
+// 최종 승인된 계약만 조회
+// ----------------------
+router.get("/contracts/approved/list", async (req, res) => {
+  try {
+    const approved = await Contract.find({ status: "APPROVED" })
+      .sort({ updatedAt: -1 });
+    res.json({ items: approved, total: approved.length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ================== 오프체인 계약 관리 ==================
+router.post('/contracts/:id/invite', createInvite);
+router.post('/contracts/:id/accept', acceptInvite);
+router.post('/contracts/:id/request-otp', requestOtp);
+router.post('/contracts/:id/verify-otp', verifyOtp);
+router.post('/contracts/:id/sign', signContract);
 
 export default router;
