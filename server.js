@@ -5,29 +5,20 @@ import * as path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './backend/routes/api.js';
-import contractsRouter from './backend/routes/contracts.js';
-import * as flow from './backend/routes/contract-flow.js';
 import { connectDB } from './backend/db.js'; 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
-const contractFlowRouter = flow.default || flow.router;
-console.log('[flow exports]', Object.keys(flow)); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 await connectDB();
-
-app.use('/api/contracts', contractFlowRouter); // 초대/서명/최종승인 플로우
-app.use('/api/contracts', contractsRouter);
-app.use('/api', apiRouter);
-
 
 // 2) React 빌드 결과물(정적 파일) 제공
 const buildPath = path.join(__dirname, 'frontend', 'build');
 app.use(express.static(buildPath));
+app.use('/api', apiRouter);
 
 // 3) SPA 대응: 그 외 모든 GET 요청은 index.html 로
 app.get(/.*/, (req, res) => {
@@ -35,6 +26,8 @@ app.get(/.*/, (req, res) => {
 });
 
 console.log('✅ Catch-all route added');
+console.log('✅ Contract OK');
+console.log('✅ Timesheet OK');
 
 // 4) 포트 5000에서 모든 인터페이스 바인딩
 const PORT = process.env.PORT || 5000;

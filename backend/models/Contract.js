@@ -65,7 +65,7 @@ const SignatureSchema = new mongoose.Schema(
     // 상태 머신
     status: {
     type: String,
-    enum: ['DRAFT', 'INVITED', 'ACCEPTED', 'SIGNED_EMP', 'SIGNED_BOTH', 'APPROVED'],
+    enum: ['DRAFT', 'INVITED', 'ACCEPTED', "PENDING_SIGN", 'SIGNED_EMP', 'SIGNED_BOTH', 'APPROVED'],
     default: 'DRAFT',
     },
     

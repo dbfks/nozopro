@@ -1,5 +1,5 @@
 // backend/routes/api.js
-import 'dotenv/config'
+import 'dotenv/config';
 import express from 'express';  
 import multer from 'multer';
 import PinataSDK from '@pinata/sdk';
@@ -14,7 +14,6 @@ import mongoose from "mongoose";
 import { createInvite, acceptInvite } from '../controllers/contractController.js';
 import { requestOtp, verifyOtp } from "../controllers/otpController.js";
 import { signContract } from "../controllers/signController.js";
-
 
 const router = express.Router();
 router.use(express.json());
@@ -51,11 +50,32 @@ const timesheet = new ethers.Contract(process.env.TIMESHEET_ADDRESS, timesheetAb
 
 // ================ REST API 라우트 =====================
 
-/**
- * @route POST /api/uploadContract
- * @desc  계약서 파일을 form-data로 받아 Pinata에 업로드하고 CID 반환
- *        필드명: contract
- */
+// ----------------------
+// 계약 생성 (DB만 저장)
+// ----------------------
+router.post("/contracts", async (req, res) => {
+  try {
+    const doc = await Contract.create({
+      ...req.body,
+      status: "DRAFT", // 최초 상태는 DRAFT
+    });
+    res.status(201).json(doc);
+  } catch (e) {
+    console.error("create contract error:", e);
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// 초대 & 수락
+router.post('/contracts/:id/invite', createInvite);
+router.post('/contracts/:id/accept', acceptInvite);
+
+// OTP
+router.post('/contracts/:id/request-otp', requestOtp);
+router.post('/contracts/:id/verify-otp', verifyOtp);
+
+// 서명 & 최종 승인 (signController에서 PDF/IPFS/OnChain까지)
+router.post('/contracts/:id/sign', signContract);
 
 // 파일 업로드 → IPFS
 router.post('/uploadContract', upload.single('contract'), async (req, res) => {
@@ -71,21 +91,6 @@ router.post('/uploadContract', upload.single('contract'), async (req, res) => {
   } catch (err) {
     console.error('uploadContract error', err);
     return res.status(500).json({ error: err.message || '파일 업로드 중 오류' });
-  }
-});
-
-// 온체인 계약 등록 (자동화 안 할 경우 직접 호출용)
-router.post('/register', async (req, res) => {
-  try {
-    const { cid, expiryTs } = req.body;
-    const tx = await registry.registerContract(ethers.id(cid), expiryTs);
-    const receipt = await tx.wait();
-    const nextIdBigInt = await registry.nextId();
-    const id = Number(nextIdBigInt - 1n);
-    res.json({ txHash: tx.hash, id });
-  } catch (err) {
-    console.error('register error', err);
-    res.status(500).json({ error: err.reason || err.message });
   }
 });
 
@@ -129,10 +134,7 @@ router.get('/entries/:id', async (req, res) => {
 // ----------------------
 router.get("/contracts", async (req, res) => {
   try {
-    const {
-      q, employer, employee, status, from, to,
-      page = 1, size = 10,
-    } = req.query;
+    const { q, employer, employee, status, from, to, page = 1, size = 10 } = req.query;
 
     const filter = {};
     if (employer) filter["employer.address"] = employer;
@@ -182,19 +184,11 @@ router.get("/contracts/:id", async (req, res) => {
 // ----------------------
 router.get("/contracts/approved/list", async (req, res) => {
   try {
-    const approved = await Contract.find({ status: "APPROVED" })
-      .sort({ updatedAt: -1 });
+    const approved = await Contract.find({ status: "APPROVED" }).sort({ updatedAt: -1 });
     res.json({ items: approved, total: approved.length });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
-
-// ================== 오프체인 계약 관리 ==================
-router.post('/contracts/:id/invite', createInvite);
-router.post('/contracts/:id/accept', acceptInvite);
-router.post('/contracts/:id/request-otp', requestOtp);
-router.post('/contracts/:id/verify-otp', verifyOtp);
-router.post('/contracts/:id/sign', signContract);
 
 export default router;
