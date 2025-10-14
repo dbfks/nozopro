@@ -82,7 +82,7 @@ const SignatureSchema = new mongoose.Schema(
       },
 
       onChain: {
-        id: { type: Number },
+        id: { type: String },
         lastTxHash: { type: String, default: '' },
       },
     },

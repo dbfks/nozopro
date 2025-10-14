@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getContract, signContract } from "../services/contracts";
 import SignaturePad from "../components/SignaturePad";
+import ContractPreview from "../components/ContractPreview";
 
 export default function ContractApprove() {
   const { id } = useParams();
@@ -56,9 +57,7 @@ export default function ContractApprove() {
       <p>상태: {contract.status}</p>
 
       <h2>계약 내용</h2>
-      <pre style={{ background: "#f7f7f7", padding: 12 }}>
-        {JSON.stringify(contract.docJson, null, 2)}
-      </pre>
+      <ContractPreview contract={contract} />
 
       {contract.status === "SIGNED_EMP" && (
         <button onClick={() => setShowSignPad(true)} style={{ marginTop: 20 }}>
@@ -81,6 +80,16 @@ export default function ContractApprove() {
           ✅ 최종 승인 완료!  
           <p>IPFS CID: {contract.final?.ipfsCid}</p>
           <p>Tx Hash: {contract.final?.txHash}</p>
+          {contract.final?.ipfsCid && (
+            <a
+              href={`https://ipfs.io/ipfs/${contract.final.ipfsCid}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: "inline-block", marginTop: 8 }}
+            >
+              PDF 다운로드
+            </a>
+          )}
         </div>
       )}
     </div>

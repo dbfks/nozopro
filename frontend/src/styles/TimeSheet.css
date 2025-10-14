@@ -1,0 +1,38 @@
+.timesheet-container {
+    padding: 16px;
+  }
+  
+  .entry-info {
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  
+  .btn {
+    flex: 1;
+    margin: 0 6px;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .btn-in {
+    background: #007bff;
+    color: #fff;
+  }
+  
+  .btn-out {
+    background: #dc3545;
+    color: #fff;
+  }
+  

@@ -15,6 +15,14 @@ app.use(cors());
 app.use(express.json());
 await connectDB();
 
+// 전역 예외 가드: 외부 네트워크 오류(ECONNRESET 등)로 인한 프로세스 종료 방지
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 // 2) React 빌드 결과물(정적 파일) 제공
 const buildPath = path.join(__dirname, 'frontend', 'build');
 app.use(express.static(buildPath));

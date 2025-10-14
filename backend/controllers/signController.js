@@ -1,4 +1,3 @@
-// backend/controllers/signController.js
 import Contract from "../models/Contract.js";
 import mongoose from "mongoose";
 import { buildContractPdf } from "../utils/pdf.js";
@@ -18,7 +17,7 @@ async function findContract(id) {
 export async function signContract(req, res) {
   try {
     const { id } = req.params;
-    const { inviteId, signer, sig, signType, signBlob } = req.body;
+    const { signer, sig, signType, signBlob } = req.body;
 
     const contract = await findContract(id);
     if (!contract) return res.status(404).json({ error: "Contract not found" });
@@ -29,7 +28,7 @@ export async function signContract(req, res) {
         return res.status(400).json({ error: "Invalid state for employee sign" });
 
       // 중복 서명 방지
-      if (contract.signatures.some(s => s.role === "EMPLOYEE")) {
+      if (contract.signatures.some((s) => s.role === "EMPLOYEE")) {
         return res.status(400).json({ error: "Employee already signed" });
       }
 
@@ -54,7 +53,7 @@ export async function signContract(req, res) {
         return res.status(400).json({ error: "Invalid state for employer sign" });
 
       // 중복 서명 방지
-      if (contract.signatures.some(s => s.role === "EMPLOYER")) {
+      if (contract.signatures.some((s) => s.role === "EMPLOYER")) {
         return res.status(400).json({ error: "Employer already signed" });
       }
 
@@ -69,14 +68,15 @@ export async function signContract(req, res) {
       });
 
       // ===== PDF 생성 & IPFS 업로드 =====
-      const employeeSign = contract.signatures.find(s => s.role === "EMPLOYEE");
-      const employerSign = contract.signatures.find(s => s.role === "EMPLOYER");
+      const employeeSign = contract.signatures.find((s) => s.role === "EMPLOYEE");
+      const employerSign = contract.signatures.find((s) => s.role === "EMPLOYER");
       const pdfBuffer = await buildContractPdf({
         contract: contract.toObject(),
         employeeSign,
         employerSign,
       });
 
+      // IPFS 업로드 (네트워크 오류에 대비하여 명확한 에러 메시지 제공)
       const cid = await pinFileToIPFS(`${contract.contractId}.pdf`, pdfBuffer);
       const fileHash = keccak256(pdfBuffer);
 
@@ -84,9 +84,16 @@ export async function signContract(req, res) {
       let txHash = null;
       if (!contract.onChain?.id) {
         // 최초 등록
-        const expiryTs = Math.floor(new Date(contract.docJson?.contractPeriod?.endDate || Date.now()) / 1000);
-        const { txHash: regHash, contractId: chainId } = await registerOnChain(fileHash, expiryTs);
-        contract.onChain = { id: chainId, txHash: regHash };
+        const expiryTs = Math.floor(
+          new Date(contract.docJson?.contractPeriod?.endDate || Date.now()) / 1000
+        );
+
+        const { txHash: regHash } = await registerOnChain(
+          contract.contractId,
+          fileHash,
+          expiryTs
+        );
+        contract.onChain = { id: contract.contractId, txHash: regHash };
         txHash = regHash;
       } else {
         // 이미 등록된 경우 → 최종 승인
@@ -109,6 +116,7 @@ export async function signContract(req, res) {
     return res.status(400).json({ error: "Signer not authorized" });
   } catch (e) {
     console.error("signContract error:", e);
-    res.status(500).json({ error: e.message });
+    const message = e?.reason || e?.message || 'Unknown error';
+    res.status(500).json({ error: message });
   }
 }

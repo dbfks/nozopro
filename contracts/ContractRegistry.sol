@@ -10,17 +10,18 @@ contract ContractRegistry {
         bool approved;
     }
 
-    mapping(uint256 => ContractData) public contracts;
-    uint256 public nextId;
+    // string 기반 식별자 사용
+    mapping(string => ContractData) public contracts;
 
-    event ContractRegistered(uint256 indexed id, bytes32 fileHash, uint256 expiry);
-    event EmployerSigned(uint256 indexed id);
-    event WorkerSigned(uint256 indexed id);
-    event ContractExpired(uint256 indexed id);
-    event ContractApproved(uint256 indexed id);
+    event ContractRegistered(string indexed id, bytes32 fileHash, uint256 expiry);
+    event EmployerSigned(string indexed id);
+    event WorkerSigned(string indexed id);
+    event ContractExpired(string indexed id);
+    event ContractApproved(string indexed id);
 
-    function registerContract(bytes32 fileHash, uint256 expiry) external {
-        uint256 id = nextId;
+    function registerContract(string calldata id, bytes32 fileHash, uint256 expiry) external {
+        ContractData storage c = contracts[id];
+        require(c.fileHash == 0, "Already exists"); // 중복 방지
         contracts[id] = ContractData({
             fileHash: fileHash,
             expiry: expiry,
@@ -28,11 +29,10 @@ contract ContractRegistry {
             signedByWorker: false,
             approved: false
         });
-        nextId++;
         emit ContractRegistered(id, fileHash, expiry);
     }
 
-    function signByEmployer(uint256 id) external {
+    function signByEmployer(string calldata id) external {
         ContractData storage c = contracts[id];
         require(c.fileHash != 0, "Not exists");
         require(!c.signedByEmployer, "Already signed");
@@ -40,7 +40,7 @@ contract ContractRegistry {
         emit EmployerSigned(id);
     }
 
-    function signByWorker(uint256 id) external {
+    function signByWorker(string calldata id) external {
         ContractData storage c = contracts[id];
         require(c.fileHash != 0, "Not exists");
         require(!c.signedByWorker, "Already signed");
@@ -48,13 +48,13 @@ contract ContractRegistry {
         emit WorkerSigned(id);
     }
 
-    function expireContract(uint256 id) external {
+    function expireContract(string calldata id) external {
         ContractData storage c = contracts[id];
         require(block.timestamp >= c.expiry, "Not yet expired");
         emit ContractExpired(id);
     }
 
-    function approveContract(uint256 id) external {
+    function approveContract(string calldata id) external {
         ContractData storage c = contracts[id];
         require(c.signedByEmployer && c.signedByWorker, "Not fully signed");
         require(block.timestamp < c.expiry, "Expired");

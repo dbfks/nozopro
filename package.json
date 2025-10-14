@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "pdf:sample": "node ./scripts/pdf_sample.mjs"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.6",
     "pdfkit": "^0.17.2",
+    "react-calendar": "^6.0.0",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
