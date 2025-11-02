@@ -2,7 +2,7 @@ import Contract from "../models/Contract.js";
 import mongoose from "mongoose";
 import { buildContractPdf } from "../utils/pdf.js";
 import { pinFileToIPFS } from "../utils/pinata.js";
-import { keccak256, registerOnChain, approveOnChain } from "../utils/onchain.js";
+import { keccak256, registerOnChain, approveOnChain, getContractState } from "../utils/onchain.js";
 
 const { isValidObjectId } = mongoose;
 
@@ -97,7 +97,21 @@ export async function signContract(req, res) {
         txHash = regHash;
       } else {
         // 이미 등록된 경우 → 최종 승인
-        txHash = await approveOnChain(contract.onChain.id);
+        try {
+          txHash = await approveOnChain(contract.onChain.id);
+        } catch (approveError) {
+          console.error("approveOnChain failed:", approveError);
+          // 온체인 상태 확인
+          const onChainState = await getContractState(contract.onChain.id);
+          console.log("On-chain state:", onChainState);
+          
+          if (onChainState.approved) {
+            console.log("Contract already approved on-chain");
+            txHash = contract.onChain.txHash; // 기존 해시 사용
+          } else {
+            throw new Error(`승인 실패: ${approveError.reason || approveError.message}`);
+          }
+        }
       }
 
       // ===== DB 갱신 =====

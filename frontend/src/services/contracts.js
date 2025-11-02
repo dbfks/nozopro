@@ -127,3 +127,12 @@ export async function submitSignature({ contractId, inviteId, signer, role, sign
     signBlob,         // base64 PNG
   });
 }
+
+/**
+ * 초대 알림 조회
+ */
+export async function getInviteNotifications(address) {
+  const r = await fetch(`${API}/notifications/${address}`);
+  if (!r.ok) throw new Error("초대 알림 조회 실패");
+  return r.json();
+}

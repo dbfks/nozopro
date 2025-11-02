@@ -1,46 +1,37 @@
-// frontend/src/pages/CreateContract.jsx
-import { useState } from "react";
-import { createContract } from "../services/contracts";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { getContract, updateContract } from "../services/contracts";
 
 const INSURANCE_OPTIONS = ["고용보험", "산재보험", "국민연금", "건강보험"];
 
-export default function CreateContract() {
-  // 현재 로그인한 사용자 정보 가져오기
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-  
-  const [form, setForm] = useState({
-    title: "근로계약",
-    // ✅ 현재 로그인한 사용자를 고용주로 설정
-    employer: { 
-      name: currentUser?.name || "고용주", 
-      address: currentUser?.walletAddress || "" 
-    },
-    employee: { name: "", address: "" }, // 근로자는 초대 시 설정
-
-    // PDF 스키마
-    docJson: {
-      contractPeriod: { start: "", end: "" },
-      workplace: "",
-      duty: "",
-      workingHours: { start: "", end: "", break: "" },
-      workDays: "",
-      wage: { type: "월급", amount: "", paymentDate: "", method: "계좌이체" },
-      vacation: "근로기준법에 따른 연차 유급휴가를 부여한다.",
-      // ✅ 복수 선택용으로 통일
-      insurances: ["고용보험", "산재보험", "국민연금", "건강보험"],
-      employer: { company: "", address: "", phone: "" },
-      employee: { address: "", phone: "" },
-      signedDate: "",
-    },
-  });
-
+export default function EditContract() {
+  const { id } = useParams();
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
-  // ✅ 안전한 중첩 업데이트 (깊은복사 + 중간객체 자동 생성)
+  // 계약 데이터 로드
+  useEffect(() => {
+    async function loadContract() {
+      try {
+        setLoading(true);
+        const contract = await getContract(id);
+        setForm(contract);
+      } catch (err) {
+        setError("계약 조회 실패: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadContract();
+  }, [id]);
+
+  // 안전한 중첩 업데이트
   const onChange = (path, value) => {
     setForm((prev) => {
+      if (!prev) return prev;
       const updated = structuredClone(prev);
       const keys = path.split(".");
       let obj = updated;
@@ -69,19 +60,26 @@ export default function CreateContract() {
           wage: { ...form.docJson.wage, amount: isNaN(amt) ? 0 : amt },
         },
       };
-      const res = await createContract(payload);
+      const res = await updateContract(id, payload);
       if (res?.error) throw new Error(res.error);
       setResult(res);
     } catch (err) {
-      setError(err.message || "생성 중 오류 발생");
+      setError(err.message || "수정 중 오류 발생");
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (loading) return <p>⏳ 계약 정보를 불러오는 중...</p>;
+  if (error) return <p style={{ color: "crimson" }}>오류: {error}</p>;
+  if (!form) return <p>계약을 불러오지 못했습니다.</p>;
+
   return (
     <div style={{ maxWidth: 880, margin: "40px auto", padding: 20 }}>
-      <h1>근로계약서 작성</h1>
+      <h1>계약서 수정</h1>
+      <p style={{ color: "#6b7280", marginBottom: 24 }}>
+        계약 ID: {form.contractId} | 상태: {form.status}
+      </p>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 18 }}>
         {/* 계약 제목 */}
@@ -89,7 +87,7 @@ export default function CreateContract() {
           계약 제목
           <input
             type="text"
-            value={form.title}
+            value={form.title || ""}
             onChange={(e) => onChange("title", e.target.value)}
             required
           />
@@ -121,13 +119,13 @@ export default function CreateContract() {
             onChange={(e) => onChange("employee.name", e.target.value)}
             required
           />
+          <input
+            placeholder="근로자 지갑주소 (0x...)"
+            value={form.employee?.address || ""}
+            onChange={(e) => onChange("employee.address", e.target.value)}
+            required
+          />
         </fieldset>
-        <input
-          placeholder="근로자 지갑주소 (0x...)"
-          value={form.employee?.address || ""}
-          onChange={(e) => onChange("employee.address", e.target.value)}
-          required
-        />
 
         {/* 계약 기간 */}
         <fieldset>
@@ -261,6 +259,7 @@ export default function CreateContract() {
                     checked={checked}
                     onChange={(e) =>
                       setForm((prev) => {
+                        if (!prev) return prev;
                         const next = structuredClone(prev);
                         const set = new Set(next.docJson.insurances || []);
                         if (e.target.checked) set.add(opt);
@@ -319,9 +318,25 @@ export default function CreateContract() {
           </label>
         </fieldset>
 
-        <button type="submit" disabled={submitting}>
-          {submitting ? "저장 중..." : "계약서 저장"}
-        </button>
+        <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+          <button type="submit" disabled={submitting}>
+            {submitting ? "수정 중..." : "계약서 수정"}
+          </button>
+          <a
+            href={`/ui/contracts/${id}/view`}
+            style={{
+              background: "#6b7280",
+              color: "white",
+              padding: "10px 16px",
+              borderRadius: 6,
+              textDecoration: "none",
+              fontSize: 14,
+              fontWeight: 500
+            }}
+          >
+            취소
+          </a>
+        </div>
       </form>
 
       {error && <p style={{ color: "crimson" }}>{error}</p>}
@@ -333,14 +348,10 @@ export default function CreateContract() {
           border: "1px solid #0ea5e9", 
           borderRadius: 8 
         }}>
-          <h3 style={{ color: "#0369a1", margin: "0 0 16px 0" }}>✅ 계약서 저장 완료!</h3>
-          <p style={{ margin: "0 0 16px 0", color: "#374151" }}>
-            계약 ID: <code style={{ background: "#e5e7eb", padding: "2px 6px", borderRadius: 4 }}>{result.contractId}</code>
-          </p>
-          
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <h3 style={{ color: "#0369a1", margin: "0 0 16px 0" }}>✅ 계약서 수정 완료!</h3>
+          <div style={{ display: "flex", gap: 12 }}>
             <a
-              href={`/ui/contracts/${result.contractId}/view`}
+              href={`/ui/contracts/${id}/view`}
               style={{
                 background: "#3b82f6",
                 color: "white",
@@ -351,11 +362,10 @@ export default function CreateContract() {
                 display: "inline-block"
               }}
             >
-              📋 계약서 보기
+              📋 수정된 계약서 보기
             </a>
-            
             <a
-              href={`/ui/contracts/${result.contractId}/invite`}
+              href={`/ui/contracts/${id}/invite`}
               style={{
                 background: "#10b981",
                 color: "white",

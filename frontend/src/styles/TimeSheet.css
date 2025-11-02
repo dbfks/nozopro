@@ -35,4 +35,70 @@
     background: #dc3545;
     color: #fff;
   }
+
+  /* --- Pending table styles --- */
+  .pending-card {
+    margin: 16px 0 20px 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .pending-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .pending-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-approve {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  .btn-approve:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+  }
+
+  .pending-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pending-table th, .pending-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .pending-table thead th {
+    font-weight: 700;
+    color: #374151;
+    background: #f9fafb;
+  }
+
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-pending { background: #fff7ed; color: #c2410c; }
+  .status-approved { background: #ecfdf5; color: #047857; }
+  .status-rejected { background: #fef2f2; color: #b91c1c; }
   

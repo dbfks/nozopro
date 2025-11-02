@@ -7,6 +7,12 @@ const TimeEntrySchema = new mongoose.Schema({
   outTime: { type: Date },
   txHashIn: { type: String },
   txHashOut: { type: String },
+  status: { 
+    type: String, 
+    enum: ["PENDING", "APPROVED", "REJECTED"], 
+    default: "PENDING" 
+  }, // 승인 상태
+  workHours: { type: Number }, // 근무 시간 (시간 단위)
 }, { timestamps: true });
 
 export default mongoose.model("TimeEntry", TimeEntrySchema);

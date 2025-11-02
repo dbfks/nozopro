@@ -13,7 +13,7 @@ import TimeEntry from "../models/TimeEntry.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
 
-import { createInvite, acceptInvite } from '../controllers/contractController.js';
+import { createInvite, acceptInvite, getInviteNotifications } from '../controllers/contractController.js';
 import { requestOtp, verifyOtp } from "../controllers/otpController.js";
 import { signContract } from "../controllers/signController.js";
 
@@ -115,6 +115,9 @@ router.post("/contracts", async (req, res) => {
 router.post('/contracts/:id/invite', createInvite);
 router.post('/contracts/:id/accept', acceptInvite);
 
+// 초대 알림 조회
+router.get('/notifications/:address', getInviteNotifications);
+
 // OTP
 router.post('/contracts/:id/request-otp', requestOtp);
 router.post('/contracts/:id/verify-otp', verifyOtp);
@@ -139,7 +142,7 @@ router.post('/uploadContract', upload.single('contract'), async (req, res) => {
   }
 });
 
-// ✅ 출근
+// ✅ 출근 (로컬 DB만 저장)
 router.post("/clock-in", async (req, res) => {
   try {
     const { id, walletAddress } = req.body;
@@ -147,27 +150,23 @@ router.post("/clock-in", async (req, res) => {
       return res.status(400).json({ error: "id와 walletAddress가 필요합니다." });
     }
 
-    // 온체인 출근 트랜잭션 실행 (컨트랙트 시그니처는 clockIn(string) 하나의 인자만 받음)
-    const tx = await timesheet.clockIn(id);
-    await tx.wait();
-
-    // DB 저장
+    // DB에만 저장 (블록체인 X)
     const entry = new TimeEntry({
       contractId: id,
       walletAddress,
       inTime: new Date(),
-      txHashIn: tx.hash,
+      status: "PENDING", // 승인 대기 상태
     });
     await entry.save();
 
-    res.json({ success: true, txHash: tx.hash });
+    res.json({ success: true, message: "출근 기록이 저장되었습니다. 고용주 승인을 기다리는 중입니다." });
   } catch (err) {
     console.error("clock-in error:", err);
     res.status(500).json({ error: err.reason || err.message });
   }
 });
 
-// ✅ 퇴근
+// ✅ 퇴근 (로컬 DB만 저장)
 router.post("/clock-out", async (req, res) => {
   try {
     const { id, walletAddress } = req.body;
@@ -175,25 +174,118 @@ router.post("/clock-out", async (req, res) => {
       return res.status(400).json({ error: "id와 walletAddress가 필요합니다." });
     }
 
-    // 온체인 퇴근 트랜잭션 실행 (컨트랙트 시그니처는 clockOut(string) 하나의 인자만 받음)
-    const tx = await timesheet.clockOut(id);
-    await tx.wait();
-
     // DB 업데이트 (마지막 출근 기록 찾아서 퇴근 기록 추가)
-    const entry = await TimeEntry.findOne({ contractId: id, walletAddress }).sort({ createdAt: -1 });
-    if (entry) {
-      entry.outTime = new Date();
-      entry.txHashOut = tx.hash;
-      await entry.save();
+    const entry = await TimeEntry.findOne({ 
+      contractId: id, 
+      walletAddress, 
+      status: "PENDING",
+      outTime: { $exists: false } 
+    }).sort({ createdAt: -1 });
+    
+    if (!entry) {
+      return res.status(400).json({ error: "출근 기록을 찾을 수 없습니다." });
     }
 
-    res.json({ success: true, txHash: tx.hash });
+    entry.outTime = new Date();
+    entry.status = "PENDING"; // 여전히 승인 대기
+    await entry.save();
+
+    // 근무 시간 계산
+    const workHours = (entry.outTime - entry.inTime) / (1000 * 60 * 60); // 시간 단위
+    entry.workHours = Math.round(workHours * 100) / 100; // 소수점 2자리
+    await entry.save();
+
+    res.json({ 
+      success: true, 
+      message: "퇴근 기록이 저장되었습니다. 고용주 승인을 기다리는 중입니다.",
+      workHours: entry.workHours
+    });
   } catch (err) {
     console.error("clock-out error:", err);
     res.status(500).json({ error: err.reason || err.message });
   }
 });
 
+// ✅ 고용주 승인 (블록체인에 배치 업로드)
+router.post("/approve-timesheet", async (req, res) => {
+  try {
+    const { contractId, entryIds } = req.body;
+    if (!contractId || !entryIds || !Array.isArray(entryIds)) {
+      return res.status(400).json({ error: "contractId와 entryIds 배열이 필요합니다." });
+    }
+
+    // 승인할 엔트리들 조회
+    const entries = await TimeEntry.find({ 
+      _id: { $in: entryIds },
+      contractId,
+      status: "PENDING"
+    });
+
+    if (entries.length === 0) {
+      return res.status(400).json({ error: "승인할 기록이 없습니다." });
+    }
+
+    const txHashes = [];
+    
+    // 각 엔트리를 블록체인에 업로드
+    for (const entry of entries) {
+      try {
+        // 출근 트랜잭션
+        const inTx = await timesheet.clockIn(contractId);
+        await inTx.wait();
+        
+        // 퇴근 트랜잭션 (퇴근 시간이 있는 경우)
+        let outTx = null;
+        if (entry.outTime) {
+          outTx = await timesheet.clockOut(contractId);
+          await outTx.wait();
+        }
+
+        // DB 업데이트
+        entry.txHashIn = inTx.hash;
+        entry.txHashOut = outTx?.hash;
+        entry.status = "APPROVED";
+        await entry.save();
+
+        txHashes.push({
+          entryId: entry._id,
+          inTx: inTx.hash,
+          outTx: outTx?.hash
+        });
+
+      } catch (txError) {
+        console.error(`Transaction failed for entry ${entry._id}:`, txError);
+        // 개별 트랜잭션 실패는 로그만 남기고 계속 진행
+      }
+    }
+
+    res.json({ 
+      success: true, 
+      message: `${entries.length}개 기록이 승인되어 블록체인에 등록되었습니다.`,
+      txHashes 
+    });
+
+  } catch (err) {
+    console.error("approve-timesheet error:", err);
+    res.status(500).json({ error: err.reason || err.message });
+  }
+});
+
+// ✅ 승인 대기 중인 출퇴근 로그 조회 (고용주용)
+router.get("/pending-entries/:contractId", async (req, res) => {
+  try {
+    const { contractId } = req.params;
+    const entries = await TimeEntry.find({ 
+      contractId, 
+      status: "PENDING" 
+    }).sort({ createdAt: -1 });
+
+    res.json({ entries });
+  } catch (err) {
+    console.error("pending-entries error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
   // 출퇴근 로그 조회 (DB + 온체인 이벤트)
 router.get('/entries/:contractId', async (req, res) => {
@@ -230,6 +322,9 @@ router.get('/entries/:contractId', async (req, res) => {
           outTime: e.outTime,
           txHashIn: e.txHashIn,
           txHashOut: e.txHashOut,
+          status: e.status,          // ✅ 상태 포함
+          workHours: e.workHours,    // ✅ 근무시간 포함
+          _id: e._id,                // ✅ 테이블 선택용
         })),
       chainLogs: {
         clockIns: logsIn.map(l => ({
@@ -297,7 +392,19 @@ router.get("/contracts", async (req, res) => {
 
     const filter = {};
     if (employer) filter["employer.address"] = employer;
-    if (employee) filter["employee.address"] = employee;
+    if (employee) {
+      filter["employee.address"] = employee;
+      // 근로자 리스트 기본 가시성: ACCEPTED 이후 상태만 노출
+      if (!status) {
+        filter.status = { $in: [
+          "ACCEPTED",
+          "PENDING_SIGN",
+          "SIGNED_EMP",
+          "SIGNED_BOTH",
+          "APPROVED",
+        ] };
+      }
+    }
     if (status) filter.status = status;
     if (from || to) {
       filter.createdAt = {

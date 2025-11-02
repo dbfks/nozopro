@@ -1,3 +1,4 @@
+//controllers/contractController.js
 import Contract, { computeInviteHash } from '../models/Contract.js';
 import { randomBytes, randomUUID } from 'crypto';
 import mongoose from 'mongoose';
@@ -106,6 +107,47 @@ export async function acceptInvite(req, res) {
     return res.json({ ok: true, contractId: contract._id, status: contract.status, invite });
   } catch (e) {
     console.error(e);
+    return res.status(500).json({ error: 'Internal error' });
+  }
+}
+
+// 초대 알림 조회 (근로자 주소로 대기 중인 초대 목록)
+export async function getInviteNotifications(req, res) {
+  try {
+    const { address } = req.params;
+    if (!address) return res.status(400).json({ error: 'address is required' });
+
+    // 해당 주소로 보낸 초대 중 PENDING 상태인 것들 조회
+    const contracts = await Contract.find({
+      'invites.invitee.address': address.toLowerCase(),
+      'invites.status': 'PENDING',
+      'invites.expiresAt': { $gt: new Date() } // 만료되지 않은 것만
+    }).select('title contractId employer employee docJson invites');
+
+    const notifications = [];
+    contracts.forEach(contract => {
+      const pendingInvites = contract.invites.filter(invite => 
+        invite.invitee.address.toLowerCase() === address.toLowerCase() && 
+        invite.status === 'PENDING' &&
+        (!invite.expiresAt || new Date(invite.expiresAt) > new Date())
+      );
+
+      pendingInvites.forEach(invite => {
+        notifications.push({
+          contractId: contract.contractId,
+          contractTitle: contract.title,
+          employer: contract.employer,
+          inviteId: invite.id,
+          role: invite.role,
+          expiresAt: invite.expiresAt,
+          createdAt: contract.createdAt
+        });
+      });
+    });
+
+    return res.json({ notifications });
+  } catch (e) {
+    console.error('getInviteNotifications error:', e);
     return res.status(500).json({ error: 'Internal error' });
   }
 }

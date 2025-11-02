@@ -1,6 +1,7 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import CreateContract from "./pages/CreateContract";
+import EditContract from "./pages/EditContract";
 import InviteContract from "./pages/InviteContract";
 import ContractAccept from "./pages/ContractAccept";
 import ContractApprove from "./pages/ContractApprove";
@@ -9,6 +10,7 @@ import ContractView from "./pages/ContractView";
 import TimeSheet from "./pages/TimeSheet";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import InviteHistory from "./pages/InviteHistory";
 import "./App.css";
 
 function Nav() {
@@ -74,6 +76,7 @@ export default function App() {
       <main style={{ padding: 16 }}>
         <Routes>
           <Route path="/ui/contracts/new" element={<CreateContract />} />
+          <Route path="/ui/contracts/:id/edit" element={<EditContract />} />
           <Route path="/ui/contracts/:id/accept" element={<ContractAccept />} />
           <Route path="/ui/contracts/:id/invite" element={<InviteContract />} />
           <Route path="/ui/contracts/:id/approve" element={<ContractApprove />} />
@@ -82,6 +85,7 @@ export default function App() {
           <Route path="/ui/register" element={<Register />} />
           <Route path="/ui/login" element={<Login />} />
           <Route path="/ui/contracts/list" element={<ContractList />} />
+          <Route path="/ui/invite-history" element={<InviteHistory />} />
           {/* 기본 라우트 → 로그인 or 계약등록 */}
           <Route
             path="*"

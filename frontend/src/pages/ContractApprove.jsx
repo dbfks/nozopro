@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getContract, signContract } from "../services/contracts";
+import { ipfsGatewayUrl, ipfsGatewayUrls } from "../utils/ipfs";
+import { getTxDetails, etherscanTxUrl } from "../utils/etherscan";
 import SignaturePad from "../components/SignaturePad";
 import ContractPreview from "../components/ContractPreview";
 
@@ -11,6 +13,9 @@ export default function ContractApprove() {
   const [error, setError] = useState("");
   const [showSignPad, setShowSignPad] = useState(false);
   const [signError, setSignError] = useState("");
+  const [txDetails, setTxDetails] = useState(null);
+  const fmt = (n) => (n === null || n === undefined ? "-" : n.toLocaleString());
+  const statusKo = (s) => (s === "success" ? "성공" : s === "failed" ? "실패" : "처리 중");
 
   useEffect(() => {
     async function run() {
@@ -25,6 +30,16 @@ export default function ContractApprove() {
     }
     run();
   }, [id]);
+
+  useEffect(() => {
+    async function load() {
+      if (contract?.status === "APPROVED" && contract.final?.txHash) {
+        const d = await getTxDetails(contract.final.txHash);
+        setTxDetails(d);
+      }
+    }
+    load();
+  }, [contract?.status, contract?.final?.txHash]);
 
   const handleApprove = async (dataUrl) => {
     try {
@@ -81,14 +96,38 @@ export default function ContractApprove() {
           <p>IPFS CID: {contract.final?.ipfsCid}</p>
           <p>Tx Hash: {contract.final?.txHash}</p>
           {contract.final?.ipfsCid && (
-            <a
-              href={`https://ipfs.io/ipfs/${contract.final.ipfsCid}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{ display: "inline-block", marginTop: 8 }}
-            >
-              PDF 다운로드
-            </a>
+            <>
+              <a
+                href={ipfsGatewayUrl(contract.final.ipfsCid)}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: "inline-block", marginTop: 8, marginRight: 8 }}
+              >
+                PDF 다운로드 (Pinata)
+              </a>
+              
+              {contract.final?.txHash && (
+                <div style={{ marginTop: 8 }}>
+                  <a href={etherscanTxUrl(contract.final.txHash)} target="_blank" rel="noreferrer">
+                    Etherscan에서 보기
+                  </a>
+                </div>
+              )}
+              {/* {txDetails && (
+                <div style={{ marginTop: 8, fontSize: 14, background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>온체인 등록 정보</div>
+                  <div>블록 번호(기록 순번): {fmt(txDetails.blockNumber)}</div>
+                  <div>처리 결과: {statusKo(txDetails.status)}</div>
+                  <div>보낸 지갑(From): {txDetails.from}</div>
+                  <div>받는 주소(To): {txDetails.to}</div>
+                  <div>사용된 연산량(가스): {fmt(txDetails.gasUsed)}</div>
+                  <div>처리 시간: {txDetails.timestamp ? new Date(txDetails.timestamp).toLocaleString() : "-"}</div>
+                  <div style={{ marginTop: 6, color: "#6b7280", fontSize: 12 }}>
+                    가스는 거래 처리에 필요한 연산량을 뜻해요. 금액은 네트워크 상황에 따라 달라집니다.
+                  </div>
+                </div>
+              )} */}
+            </>
           )}
         </div>
       )}
