@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getContract, signContract } from "../services/contracts";
 import { ipfsGatewayUrl, ipfsGatewayUrls } from "../utils/ipfs";
 import { getTxDetails, etherscanTxUrl } from "../utils/etherscan";
 import SignaturePad from "../components/SignaturePad";
 import ContractPreview from "../components/ContractPreview";
+import BlockchainLoader from "../components/BlockchainLoader";
 
 export default function ContractApprove() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showSignPad, setShowSignPad] = useState(false);
   const [signError, setSignError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [txDetails, setTxDetails] = useState(null);
   const fmt = (n) => (n === null || n === undefined ? "-" : n.toLocaleString());
   const statusKo = (s) => (s === "success" ? "성공" : s === "failed" ? "실패" : "처리 중");
@@ -44,6 +47,9 @@ export default function ContractApprove() {
   const handleApprove = async (dataUrl) => {
     try {
       setSignError("");
+      setIsUploading(true);
+      setShowSignPad(false);
+      
       await signContract(id, {
         inviteId: contract.invites.find((i) => i.role === "EMPLOYER")?.id,
         signer: contract.employer.address,
@@ -52,12 +58,19 @@ export default function ContractApprove() {
         signBlob: dataUrl,
       });
 
-      alert("✅ 고용주 서명 + 최종 승인이 완료되었습니다.");
       const updated = await getContract(id);
       setContract(updated);
-      setShowSignPad(false);
+      alert("✅ 고용주 서명 + 최종 승인이 완료되었습니다.");
+      
+      // 계약조회 페이지로 리다이렉트 (약간의 지연 후)
+      setTimeout(() => {
+        navigate("/ui/contracts/list");
+      }, 1500);
     } catch (err) {
       setSignError(err.message || "승인 실패");
+      setIsUploading(false);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -66,8 +79,13 @@ export default function ContractApprove() {
   if (!contract) return <p>계약이 없습니다.</p>;
 
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
-      <h1>계약 상세 / 최종 승인</h1>
+    <>
+      {isUploading && (
+        <BlockchainLoader message="블록체인에 업로드 중..." />
+      )}
+      
+      <div style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
+        <h1>계약 상세 / 최종 승인</h1>
       <p>계약 ID: {contract.contractId}</p>
       <p>상태: {contract.status}</p>
 
@@ -131,6 +149,7 @@ export default function ContractApprove() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

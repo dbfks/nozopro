@@ -1,0 +1,345 @@
+.resume-builder-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px 100px 16px;
+  background: #000000;
+  min-height: 100vh;
+}
+
+.resume-builder-header {
+  margin-bottom: 24px;
+  text-align: left;
+  padding-top: 8px;
+}
+
+.resume-builder-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.resume-builder-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.resume-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.form-section {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+}
+
+.form-section:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: -0.2px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #10b981;
+  margin-bottom: 8px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* 경력 불러오기 영역 */
+.career-load-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.career-load-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 16px;
+}
+
+.loading-text {
+  text-align: center;
+  color: #10b981;
+  opacity: 0.7;
+  padding: 20px;
+}
+
+.career-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.career-option-card {
+  background: #000000;
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.career-option-card:hover {
+  background: #0a0a0a;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.career-option-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.career-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  text-align: left;
+}
+
+.career-option-info strong {
+  color: #10b981;
+  font-size: 15px;
+}
+
+.career-option-info span {
+  color: #10b981;
+  opacity: 0.8;
+  font-size: 14px;
+}
+
+.career-option-info small {
+  color: #10b981;
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.career-load-btn {
+  padding: 8px 16px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.career-load-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.career-load-btn:disabled {
+  background: #1a1a1a;
+  color: #10b981;
+  opacity: 0.5;
+  cursor: not-allowed;
+  border: 1px solid #10b981;
+}
+
+/* 경력 항목 목록 */
+.career-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.career-item-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.career-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.career-item-number {
+  font-size: 15px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.career-remove-btn {
+  padding: 6px 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.career-remove-btn:hover {
+  background: #dc2626;
+}
+
+.career-item-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.date-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date-separator {
+  color: #10b981;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.add-career-btn {
+  padding: 12px 24px;
+  background: #000000;
+  color: #10b981;
+  border: 2px dashed #10b981;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.add-career-btn:hover {
+  background: #0a0a0a;
+  border-color: #10b981;
+  border-style: solid;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+/* 저장 버튼 */
+.resume-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.save-pdf-btn {
+  padding: 14px 32px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-pdf-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.save-pdf-btn:disabled {
+  background: #1a1a1a;
+  color: #10b981;
+  opacity: 0.5;
+  cursor: not-allowed;
+  border: 1px solid #10b981;
+}
+
+@media (max-width: 768px) {
+  .resume-builder-container {
+    padding: 16px;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .career-option-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .career-load-btn {
+    width: 100%;
+  }
+
+  .date-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-separator {
+    display: none;
+  }
+}
+

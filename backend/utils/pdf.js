@@ -16,6 +16,22 @@ const pick = (...vals) => {
   return "";
 };
 
+// 근무시간 계산 (시:분 형식에서 시간 차이 계산)
+function calculateWorkHours(startTime, endTime) {
+  if (!startTime || !endTime) return "";
+  try {
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+    const diffMinutes = endMinutes - startMinutes;
+    const hours = diffMinutes / 60;
+    return hours > 0 ? Math.round(hours * 10) / 10 : ""; // 소수점 1자리까지
+  } catch {
+    return "";
+  }
+}
+
 function underlineText(doc, label, value, widthPerUnderline = 45) {
   doc.text(label, { continued: true });
   const v = u(value);
@@ -105,8 +121,14 @@ export async function buildContractPdf({ contract, employeeSign, employerSign })
 
   // 1. 근로계약기간
   sectionTitle(doc, "1. 근로계약기간");
-  const sDate = u(contract?.docJson?.contractPeriod?.startDate);
-  const eDate = u(contract?.docJson?.contractPeriod?.endDate);
+  const sDate = u(pick(
+    contract?.docJson?.contractPeriod?.startDate,
+    contract?.docJson?.contractPeriod?.start
+  ));
+  const eDate = u(pick(
+    contract?.docJson?.contractPeriod?.endDate,
+    contract?.docJson?.contractPeriod?.end
+  ));
   underlineText(doc, "  ", `${sDate}  부터  ${eDate}  까지`);
 
   // 2. 근무 장소
@@ -115,17 +137,31 @@ export async function buildContractPdf({ contract, employeeSign, employerSign })
 
   // 3. 업무의 내용
   sectionTitle(doc, "3. 업무의 내용");
-  underlineText(doc, "  ", contract?.docJson?.jobDescription);
+  underlineText(doc, "  ", pick(
+    contract?.docJson?.jobDescription,
+    contract?.docJson?.duty
+  ));
 
   // 4. 소정근로시간
   sectionTitle(doc, "4. 소정근로시간");
-  const hours = u(contract?.docJson?.workingConditions?.workHoursPerDay);
+  // 프론트엔드에서 workingHours: { start, end, break } 형태로 보내는 경우 처리
+  const workHours = contract?.docJson?.workingHours;
+  let hours = u(pick(
+    contract?.docJson?.workingConditions?.workHoursPerDay,
+    workHours?.start && workHours?.end ? calculateWorkHours(workHours.start, workHours.end) : null
+  ));
   underlineText(doc, "  1일 근로시간 : ", hours ? `${hours} 시간` : "");
-  smallLabel(doc, "휴게시간", contract?.docJson?.workingConditions?.restTime, 26);
+  smallLabel(doc, "휴게시간", pick(
+    contract?.docJson?.workingConditions?.restTime,
+    contract?.docJson?.workingHours?.break
+  ), 26);
 
   // 5. 근무일/휴일
   sectionTitle(doc, "5. 근무일/휴일");
-  underlineText(doc, "  주당 근무일 : ", contract?.docJson?.workingConditions?.workDaysPerWeek);
+  underlineText(doc, "  주당 근무일 : ", pick(
+    contract?.docJson?.workingConditions?.workDaysPerWeek,
+    contract?.docJson?.workDays
+  ));
   doc.moveDown(0.1);
   smallLabel(doc, "주휴일", contract?.docJson?.workingConditions?.weeklyHoliday, 26);
   smallLabel(doc, "근무형태", contract?.docJson?.workingConditions?.workType, 26);
@@ -135,7 +171,10 @@ export async function buildContractPdf({ contract, employeeSign, employerSign })
   smallLabel(doc, "임금형태", contract?.docJson?.wage?.type);
   smallLabel(doc, "금액", contract?.docJson?.wage?.amount ? `${contract.docJson.wage.amount} 원` : "");
   smallLabel(doc, "지급일", contract?.docJson?.wage?.paymentDate);
-  smallLabel(doc, "지급방법", contract?.docJson?.wage?.paymentMethod);
+  smallLabel(doc, "지급방법", pick(
+    contract?.docJson?.wage?.paymentMethod,
+    contract?.docJson?.wage?.method
+  ));
 
   // 7. 연차유급휴가
   sectionTitle(doc, "7. 연차유급휴가");

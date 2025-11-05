@@ -1,0 +1,416 @@
+.create-contract-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px 100px 16px;
+  background: #000000;
+  min-height: 100vh;
+}
+
+.create-contract-header {
+  text-align: left;
+  margin-bottom: 28px;
+  padding-top: 8px;
+}
+
+.create-contract-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.create-contract-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 섹션 카드 */
+.form-section {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+}
+
+.form-section:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: -0.2px;
+}
+
+.section-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+/* 입력 필드 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 8px;
+}
+
+.form-label.optional {
+  color: #10b981;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.form-label.optional::after {
+  content: " (선택사항)";
+  font-size: 12px;
+  color: #10b981;
+  opacity: 0.6;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 15px;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.4);
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 문자 카운터 */
+.char-counter {
+  text-align: right;
+  font-size: 12px;
+  color: #10b981;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.char-counter.warning {
+  color: #f59e0b;
+}
+
+.char-counter.error {
+  color: #ef4444;
+}
+
+/* 날짜 입력 그룹 */
+.date-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.date-separator {
+  color: #10b981;
+  opacity: 0.7;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.date-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.date-input-wrapper input {
+  /* 브라우저 기본 달력 아이콘 사용 */
+}
+
+/* 토글 버튼 */
+.toggle-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  background: #000000;
+  color: #10b981;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.toggle-btn:hover:not(.active) {
+  background: #0a0a0a;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+/* 시간 입력 그룹 */
+.time-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* 그리드 레이아웃 */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* 체크박스 그룹 */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+
+.checkbox-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  cursor: pointer;
+  accent-color: #10b981;
+}
+
+.checkbox-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.checkbox-item.checked {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  font-weight: 600;
+}
+
+.checkbox-item span {
+  font-size: 14px;
+}
+
+/* 도움말 텍스트 */
+.help-text {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* 제출 버튼 */
+.submit-button {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  margin-top: 32px;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 에러 메시지 */
+.error-message {
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: 12px;
+  padding: 16px;
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+/* 성공 메시지 */
+.success-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: 20px;
+  padding: 28px;
+  margin-top: 32px;
+}
+
+.success-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #065f46;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.success-info {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.success-info code {
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.success-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.success-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.success-btn-primary {
+  background: #10b981;
+  color: #fff;
+}
+
+.success-btn-primary:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.success-btn-secondary {
+  background: #10b981;
+  color: #fff;
+}
+
+.success-btn-secondary:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .create-contract-container {
+    padding: 16px;
+  }
+
+  .form-section {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .time-group {
+    grid-template-columns: 1fr;
+  }
+
+  .date-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-separator {
+    transform: rotate(90deg);
+  }
+
+  .success-actions {
+    flex-direction: column;
+  }
+
+  .success-btn {
+    width: 100%;
+  }
+}
+

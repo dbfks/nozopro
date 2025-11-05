@@ -3,8 +3,9 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Roboto, sans-serif;
-  background-color: #f0f2f5;
-  color: #333;
+  background-color: #ffffff;
+  color: #333333;
+  min-height: 100vh;
 }
 
 .container {
@@ -25,11 +26,13 @@ body {
 }
 
 .card {
-  background: #fff;
+  background: #111111;
+  border: 1px solid #10b981;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
   padding: 1.5rem;
   margin-bottom: 1rem;
+  color: #10b981;
 }
 
 .flex {
@@ -117,66 +120,149 @@ input[type="datetime-local"] {
 .auth-card {
   max-width: 400px;
   margin: 60px auto;
-  padding: 24px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 32px;
+  background: #1c1c1c;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.auth-card h2 {
+.auth-card h2,
+.auth-card .auth-title {
   text-align: center;
-  margin-bottom: 24px;
-  color: #333;
+  margin-bottom: 32px;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 24px;
 }
 
 .tab {
   display: flex;
   margin-bottom: 16px;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  border-radius: 12px;
 }
 .tab button {
   flex: 1;
   padding: 12px;
   border: none;
   cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 .tab .active {
-  background: #007bff;
-  color: #fff;
-  font-weight: bold;
+  background: #10b981;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
 }
 .tab .inactive {
-  background: #f0f0f0;
-  color: #333;
+  background: transparent;
+  color: #666666;
+}
+.tab .inactive:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #333333;
 }
 
 input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-size: 15px;
+  transition: all 0.2s;
 }
 input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 4px rgba(0,123,255,0.25);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-info {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.auth-info p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 12px;
+}
+
+.auth-info b {
+  color: #10b981;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.wallet-address {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  word-break: break-all;
+  margin: 0;
 }
 
 button.primary {
   width: 100%;
-  padding: 12px;
-  background: #007bff;
+  padding: 16px;
+  background: #336666;
   border: none;
-  color: #fff;
+  color: #ffffff;
   font-size: 16px;
-  border-radius: 4px;
+  font-weight: 600;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+button.primary:hover:not(:disabled) {
+  background: #2d5a5a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(51, 102, 102, 0.4);
 }
 button.primary:disabled {
-  background: #ccc;
+  background: rgba(51, 102, 102, 0.5);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
 }
 button.metamask {
-  background: #000000;
-  color: #fff;
-  margin-bottom: 12px;
+  width: 100%;
+  padding: 14px;
+  background: #66cc99;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button.metamask:hover:not(:disabled) {
+  background: #5bb88a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 204, 153, 0.4);
+}
+button.metamask:disabled {
+  background: rgba(102, 204, 153, 0.5);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
 }

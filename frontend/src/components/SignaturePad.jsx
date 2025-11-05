@@ -19,29 +19,66 @@ export default function SignaturePad({ onSave, onCancel }) {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "#fff",
-        padding: 20,
-        border: "1px solid #ccc",
-        borderRadius: 8,
-        zIndex: 1000,
-      }}
-    >
-      <h3>서명 입력</h3>
+    <div>
       <SignatureCanvas
         ref={sigRef}
         penColor="black"
+        backgroundColor="#ffffff"
         canvasProps={{ width: 400, height: 200, className: "border" }}
+        style={{ 
+          border: "1px solid #e5e7eb", 
+          borderRadius: 8,
+          background: "#ffffff"
+        }}
       />
-      <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-        <button onClick={handleClear}>지우기</button>
-        <button onClick={handleSave}>저장</button>
-        <button onClick={onCancel}>취소</button>
+      <div style={{ marginTop: 16, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button 
+          onClick={handleClear}
+          style={{
+            padding: "8px 16px",
+            background: "#f3f4f6",
+            color: "#374151",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            fontSize: 14,
+            fontWeight: 600
+          }}
+        >
+          지우기
+        </button>
+        <button 
+          onClick={handleSave}
+          style={{
+            padding: "8px 16px",
+            background: "#10b981",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            fontSize: 14,
+            fontWeight: 600
+          }}
+        >
+          저장
+        </button>
+        {onCancel && (
+          <button 
+            onClick={onCancel}
+            style={{
+              padding: "8px 16px",
+              background: "#f3f4f6",
+              color: "#374151",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600
+            }}
+          >
+            취소
+          </button>
+        )}
       </div>
     </div>
   );

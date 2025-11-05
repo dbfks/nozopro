@@ -38,12 +38,12 @@ export default function ContractPreview({ contract }) {
   const employerSign = (contract?.signatures || []).find((s) => s.role === "EMPLOYER");
 
   const section = {
-    title: { fontSize: 18, fontWeight: 700, textAlign: "center", marginBottom: 8 },
-    h2: { fontSize: 14, fontWeight: 700, margin: "18px 0 8px" },
-    row: { margin: "4px 0" },
+    title: { fontSize: 18, fontWeight: 700, textAlign: "left", marginBottom: 8 },
+    h2: { fontSize: 14, fontWeight: 700, margin: "18px 0 8px", textAlign: "left" },
+    row: { margin: "4px 0", textAlign: "left" },
     label: { fontWeight: 600, display: "inline-block", minWidth: 120 },
     line: { borderTop: "1px solid #e5e7eb", margin: "16px 0" },
-    box: { background: "#fff", padding: 16, border: "1px solid #e5e7eb", borderRadius: 8 },
+    box: { background: "#fff", padding: 16, border: "1px solid #e5e7eb", borderRadius: 8, textAlign: "left" },
   };
 
   const check = (label) => (
@@ -61,7 +61,7 @@ export default function ContractPreview({ contract }) {
   };
 
   return (
-    <div style={section.box}>
+    <div style={{...section.box, textAlign: "left"}}>
       <div style={section.title}>표준근로계약서(기간의 정함이 있는 경우)</div>
 
       <div style={section.h2}>1. 근로계약기간</div>
@@ -92,7 +92,7 @@ export default function ContractPreview({ contract }) {
       <div style={section.row}>{text(cj?.vacation) || "근로기준법에서 정하는 바에 따라 부여함."}</div>
 
       <div style={section.h2}>8. 사회보험 적용여부</div>
-      <div style={{ marginTop: 2 }}>
+      <div style={{ marginTop: 2, textAlign: "left" }}>
         {check("고용보험")}
         {check("산재보험")}
         {check("국민연금")}
@@ -107,7 +107,7 @@ export default function ContractPreview({ contract }) {
 
       <div style={section.line} />
 
-      <div style={{ textAlign: "center", marginBottom: 12 }}>{formatKRDate(signedDate) || "년  월  일"}</div>
+      <div style={{ textAlign: "left", marginBottom: 12 }}>{formatKRDate(signedDate) || "년  월  일"}</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <div>

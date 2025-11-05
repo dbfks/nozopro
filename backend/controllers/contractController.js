@@ -101,6 +101,14 @@ export async function acceptInvite(req, res) {
     invite.acceptedAt = new Date();
     invite.status = 'ACCEPTED';
 
+    // 초대 수락 시 employee 정보 설정
+    if (invite.role === 'EMPLOYEE' || invite.role === 'WORKER') {
+      contract.employee = {
+        address: invite.invitee.address.toLowerCase(),
+        name: invite.invitee.name || ''
+      };
+    }
+
     contract.status = 'ACCEPTED';
     await contract.save();
 

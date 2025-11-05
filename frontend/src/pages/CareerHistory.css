@@ -1,0 +1,136 @@
+.career-history-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px 100px 16px;
+  background: #000000;
+  min-height: 100vh;
+}
+
+.career-history-header {
+  margin-bottom: 24px;
+  text-align: left;
+  padding-top: 8px;
+}
+
+.career-history-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.career-history-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.career-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.career-card {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+}
+
+.career-card-clickable {
+  cursor: pointer;
+}
+
+.career-card-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: rgba(26, 26, 26, 0.9);
+}
+
+.career-card:hover:not(.career-card-clickable) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.career-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 0.3px;
+}
+
+.career-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.career-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+}
+
+.career-label {
+  font-weight: 500;
+  color: #10b981;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.career-value {
+  color: #ffffff;
+  flex: 1;
+}
+
+.career-value-link {
+  color: #10b981;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.career-card-clickable:hover .career-value-link {
+  color: #059669;
+  text-decoration: underline;
+}
+
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #10b981;
+  opacity: 0.7;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .career-history-container {
+    padding: 16px;
+  }
+
+  .career-history-title {
+    font-size: 24px;
+  }
+
+  .career-card {
+    padding: 16px;
+  }
+
+  .career-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .career-label {
+    min-width: auto;
+  }
+}
+

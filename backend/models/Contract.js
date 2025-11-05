@@ -85,6 +85,21 @@ const SignatureSchema = new mongoose.Schema(
         id: { type: String },
         lastTxHash: { type: String, default: '' },
       },
+      
+      // 숨김 관리: 각 사용자별로 숨김 상태 저장
+      hiddenBy: [{
+        address: { type: String, required: true },
+        role: { type: String, enum: ['EMPLOYER', 'EMPLOYEE'], required: true },
+        hiddenAt: { type: Date, default: () => new Date() }
+      }],
+      
+      // 사용자별 커스텀 이름: 각 사용자가 자신이 보는 계약 이름을 독립적으로 설정
+      customNames: [{
+        address: { type: String, required: true },
+        role: { type: String, enum: ['EMPLOYER', 'EMPLOYEE'], required: true },
+        customName: { type: String, required: true },
+        updatedAt: { type: Date, default: () => new Date() }
+      }],
     },
     { timestamps: true }
     );
