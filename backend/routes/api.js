@@ -14,7 +14,6 @@ import User from "../models/User.js";
 import mongoose from "mongoose";
 
 import { createInvite, acceptInvite, getInviteNotifications } from '../controllers/contractController.js';
-import { requestOtp, verifyOtp } from "../controllers/otpController.js";
 import { signContract } from "../controllers/signController.js";
 
 const router = express.Router();
@@ -117,10 +116,6 @@ router.post('/contracts/:id/accept', acceptInvite);
 
 // 초대 알림 조회
 router.get('/notifications/:address', getInviteNotifications);
-
-// OTP
-router.post('/contracts/:id/request-otp', requestOtp);
-router.post('/contracts/:id/verify-otp', verifyOtp);
 
 // 서명 & 최종 승인 (signController에서 PDF/IPFS/OnChain까지)
 router.post('/contracts/:id/sign', signContract);

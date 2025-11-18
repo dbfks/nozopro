@@ -3,7 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "../styles/TimeSheet.css";
+import "./TimeSheet.css";
 import BlockchainLoader from "../components/BlockchainLoader";
 
 export default function TimeSheet() {
